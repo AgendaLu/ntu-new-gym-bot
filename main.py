@@ -2,6 +2,8 @@
 
 import os
 import time
+import threading
+import socket
 from telegram import Bot, Update
 from telegram.ext import Updater, MessageHandler, Filters, CallbackContext
 
@@ -42,6 +44,22 @@ def handle_message(update: Update, context: CallbackContext):
         update.message.reply_text(reply)
     else:
         update.message.reply_text("請輸入 'p' 查詢台大新體目前人數")
+
+# 加在 run_telegram_bot() 的上方或 main 的開頭
+
+def dummy_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    sock = socket.socket()
+    sock.bind(("0.0.0.0", port))
+    sock.listen(1)
+    print(f"🌀 假裝的 web server 綁定在 port {port}（只是為了騙過 Render）")
+    while True:
+        conn, addr = sock.accept()
+        conn.send(b"Hello from dummy web server!\n")
+        conn.close()
+
+# 在 main 執行區啟動這個背景假 server
+threading.Thread(target=dummy_web_server, daemon=True).start()
 
 def run_telegram_bot():
     updater = Updater(TOKEN, use_context=True)
