@@ -8,6 +8,10 @@ import time
 
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
+from selenium.webdriver.chrome.service import Service
+service = Service("/opt/render/project/src/.chromium/chromedriver")
+driver = webdriver.Chrome(service=service, options=options)
+
 def get_ntu_gym_current_people():
     options = Options()
     options.binary_location = "/opt/render/project/src/.chromium/chrome-linux/chrome"
@@ -15,11 +19,10 @@ def get_ntu_gym_current_people():
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
-    driver = webdriver.Chrome(
-        executable_path="/opt/render/project/src/.chromium/chromedriver",
-        options=options
-    )
+    # ✅ 使用 Service 指定 driver 路徑（新版 Selenium 必備）
+    service = Service("/opt/render/project/src/.chromium/chromedriver")
 
+    driver = webdriver.Chrome(service=service, options=options)
     driver.get("https://rent.pe.ntu.edu.tw/")
     time.sleep(5)
 
@@ -28,6 +31,7 @@ def get_ntu_gym_current_people():
         current_people = span.text
     except Exception as e:
         current_people = "錯誤"
+        print("抓取錯誤：", e)
 
     driver.quit()
     return f"🏋️‍♂️ 台大新體現在人數：{current_people} 人"
